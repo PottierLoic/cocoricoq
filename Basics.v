@@ -898,17 +898,18 @@ Proof. simpl. reflexivity.  Qed.
     function.  (It can be done with just one previously defined
     function, but you can use two if you want.) *)
 
-Definition ltb (n m : nat) : bool
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition ltb (n m : nat) : bool :=
+  if n <=? m then negb (n =? m)
+  else false.
 
 Notation "x <? y" := (ltb x y) (at level 70) : nat_scope.
 
 Example test_ltb1:             (ltb 2 2) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 Example test_ltb2:             (ltb 2 4) = true.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 Example test_ltb3:             (ltb 4 2) = false.
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -996,11 +997,11 @@ Proof.
 
 Theorem plus_1_l : forall n:nat, 1 + n = S n.
 Proof.
-  intros n. reflexivity.  Qed.
+  intros n. simpl. reflexivity.  Qed.
 
 Theorem mult_0_l : forall n:nat, 0 * n = 0.
 Proof.
-  intros n. reflexivity.  Qed.
+  intros n. simpl. reflexivity.  Qed.
 
 (** The [_l] suffix in the names of these theorems is
     pronounced "on the left." *)
@@ -1042,7 +1043,7 @@ Proof.
   (* move the hypothesis into the context: *)
   intros H.
   (* rewrite the goal using the hypothesis: *)
-  rewrite -> H.
+  rewrite <- H.
   reflexivity.  Qed.
 
 (** The first line of the proof moves the universally quantified
@@ -1066,8 +1067,13 @@ Proof.
 Theorem plus_id_exercise : forall n m o : nat,
   n = m -> m = o -> n + m = m + o.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n m o.
+  intros H.
+  intros H'.
+  rewrite -> H.
+  rewrite -> H'.
+reflexivity. Qed.
+
 
 (** The [Admitted] command tells Coq that we want to skip trying
     to prove this theorem and just accept it as a given.  This can be
@@ -1100,6 +1106,7 @@ Check mult_n_Sm.
 
 Theorem mult_n_0_m_0 : forall p q : nat,
   (p * 0) + (q * 0) = 0.
+
 Proof.
   intros p q.
   rewrite <- mult_n_O.
@@ -1113,10 +1120,12 @@ Proof.
 
 Theorem mult_n_1 : forall p : nat,
   p * 1 = p.
-Proof.
-  (* FILL IN HERE *) Admitted.
 
-(** [] *)
+Proof.
+  intros p.
+  rewrite <- mult_n_Sm.
+  rewrite <- mult_n_O.
+  reflexivity. Qed.
 
 (* ################################################################# *)
 (** * Proof by Case Analysis *)
@@ -1312,8 +1321,15 @@ Qed.
 Theorem andb_true_elim2 : forall b c : bool,
   andb b c = true -> c = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros b c H.
+  destruct c.
+  reflexivity.
+  rewrite <- H.
+  destruct b.
+  reflexivity.
+  reflexivity.
+Qed.
+
 
 (** Before closing the chapter, let's mention one final
     convenience.  As you may have noticed, many proofs perform case
@@ -1353,8 +1369,9 @@ Qed.
 Theorem zero_nbeq_plus_1 : forall n : nat,
   0 =? (n + 1) = false.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros [|n].
+  - reflexivity.
+  - reflexivity.  Qed.
 
 (* ================================================================= *)
 (** ** More on Notation (Optional) *)
@@ -1454,9 +1471,15 @@ Theorem identity_fn_applied_twice :
   (forall (x : bool), f x = x) ->
   forall (b : bool), f (f b) = b.
 Proof.
-  (* FILL IN HERE *) Admitted.
-
-(** [] *)
+  intros f x b.
+  destruct b.
+  rewrite -> x.
+  rewrite -> x.
+  reflexivity.
+  rewrite -> x.
+  rewrite -> x.
+  reflexivity.
+Qed.
 
 (** **** Exercise: 1 star, standard (negation_fn_applied_twice)
 
@@ -1464,7 +1487,20 @@ Proof.
     to the previous one but where the second hypothesis says that the
     function [f] has the property that [f x = negb x]. *)
 
-(* FILL IN HERE *)
+Theorem negation_fn_applied_twice :
+  forall (f : bool -> bool),
+  (forall (x : bool), f x = negb x) ->
+  forall (b : bool), f (f b) = b.
+Proof.
+  intros f x b.
+  destruct b.
+  rewrite -> x.
+  rewrite -> x.
+  reflexivity.
+  rewrite -> x.
+  rewrite -> x.
+  reflexivity.
+Qed.
 
 (* Do not modify the following line: *)
 Definition manual_grade_for_negation_fn_applied_twice : option (nat*string) := None.
@@ -1484,7 +1520,15 @@ Theorem andb_eq_orb :
   (andb b c = orb b c) ->
   b = c.
 Proof.
-  (* FILL IN HERE *) Admitted.
+intros b c.
+destruct b eqn:Eb.
+  - destruct c eqn:Ec.
+    + reflexivity.
+    + simpl. rewrite <- Eb. intros H. rewrite -> H. reflexivity.
+  - destruct c eqn:Ec.
+    + simpl. rewrite <- Eb. intros H. rewrite -> H. reflexivity.
+    + reflexivity.
+Qed.
 
 (** [] *)
 
@@ -1523,8 +1567,12 @@ Inductive bin : Type :=
     for binary numbers, and a function [bin_to_nat] to convert
     binary numbers to unary numbers. *)
 
-Fixpoint incr (m:bin) : bin
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Fixpoint incr (m:bin) : bin :=
+  match m with
+  | Z => B1 Z
+  | B0 m => B1 m
+  | B1 m'' => B0 (incr m'')
+  end.
 
 Fixpoint bin_to_nat (m:bin) : nat
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -1536,13 +1584,13 @@ Fixpoint bin_to_nat (m:bin) : nat
     next chapter. *)
 
 Example test_bin_incr1 : (incr (B1 Z)) = B0 (B1 Z).
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 
 Example test_bin_incr2 : (incr (B0 (B1 Z))) = B1 (B1 Z).
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 
 Example test_bin_incr3 : (incr (B1 (B1 Z))) = B0 (B0 (B1 Z)).
-(* FILL IN HERE *) Admitted.
+Proof. simpl. reflexivity.  Qed.
 
 Example test_bin_incr4 : bin_to_nat (B0 (B1 Z)) = 2.
 (* FILL IN HERE *) Admitted.
