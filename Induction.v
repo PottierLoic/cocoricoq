@@ -153,7 +153,8 @@ Abort.
 
 Theorem add_0_r : forall n:nat, n + 0 = n.
 Proof.
-  intros n. induction n as [| n' IHn'].
+  intros n. 
+  induction n as [| n' IHn'].
   - (* n = 0 *)    reflexivity.
   - (* n = S n' *) simpl. rewrite -> IHn'. reflexivity.  Qed.
 
@@ -180,7 +181,8 @@ Theorem minus_n_n : forall n,
   minus n n = 0.
 Proof.
   (* WORKED IN CLASS *)
-  intros n. induction n as [| n' IHn'].
+  intros n. 
+  induction n as [| n' IHn'].
   - (* n = 0 *)
     simpl. reflexivity.
   - (* n = S n' *)
@@ -199,23 +201,52 @@ Proof.
 Theorem mul_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
-  (* FILL IN HERE *) Admitted.
+ intros n. 
+ induction n as [| n' IHn'].
+ - simpl. reflexivity.
+ - simpl. rewrite -> IHn'. reflexivity. Qed.
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m. 
+  induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed.
 
 Theorem add_comm : forall n m : nat,
   n + m = m + n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m. 
+  induction n as [| n' IHn'].
+  - simpl. rewrite -> add_0_r. reflexivity.
+  - simpl. rewrite <- plus_n_Sm. rewrite <- IHn'. reflexivity.
+Qed.
 
 Theorem add_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n m p.
+  induction n, m, p.
+  - simpl. reflexivity.
+  - simpl. reflexivity. 
+  - simpl. reflexivity. 
+  - simpl. reflexivity. 
+  - simpl. rewrite add_0_r. rewrite add_0_r. reflexivity. 
+  - simpl. rewrite add_0_r. reflexivity.
+  - simpl. rewrite add_0_r. rewrite add_0_r. reflexivity.
+  - simpl. rewrite <- IHn. reflexivity. 
+Qed.
+
+Theorem add_assoc_test_mieux : forall n m p : nat,
+  n + (m + p) = (n + m) + p.
+Proof.
+  intros n m p.
+  induction n.
+  - simpl. reflexivity.
+  - simpl. rewrite IHn. reflexivity. 
+Qed.
 
 (** **** Exercise: 2 stars, standard (double_plus)
 
@@ -231,8 +262,11 @@ Fixpoint double (n:nat) :=
 
 Lemma double_plus : forall n, double n = n + n .
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n.
+  induction n.
+  - simpl. reflexivity.
+  - simpl. rewrite IHn. rewrite <- plus_n_Sm. reflexivity.
+Qed.
 
 (** **** Exercise: 2 stars, standard (eqb_refl)
 
@@ -241,8 +275,12 @@ Proof.
 Theorem eqb_refl : forall n : nat,
   (n =? n) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n.
+  induction n.
+  - simpl. reflexivity.
+  - simpl. rewrite IHn. reflexivity.
+Qed.
+
 
 (** **** Exercise: 2 stars, standard, optional (even_S)
 
@@ -256,8 +294,11 @@ Proof.
 Theorem even_S : forall n : nat,
   even (S n) = negb (even n).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n.
+  induction n.
+  - simpl. reflexivity.
+  - rewrite IHn. simpl. rewrite negb_involutive. reflexivity.
+Qed.
 
 (** **** Exercise: 1 star, standard, optional (destruct_induction)
 
@@ -494,17 +535,35 @@ Definition manual_grade_for_eqb_refl_informal : option (nat*string) := None.
 Theorem add_shuffle3 : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  (* FILL IN HERE *) Admitted.
-
+  intros n m p.
+  rewrite add_comm.
+  rewrite <- add_assoc.
+  assert(H : p + n = n + p).
+    { rewrite add_comm. reflexivity. }
+  rewrite H. reflexivity.
+Qed.
 (** Now prove commutativity of multiplication.  You will probably want
     to look for (or define and prove) a "helper" theorem to be used in
     the proof of this one. Hint: what is [n * (1 + k)]? *)
 
+Theorem mul_comm_helper : forall m n : nat, 
+  m * S n = m + m * n.
+Proof.
+  intros m n.
+  induction m.
+  - simpl. reflexivity.
+  - simpl. rewrite add_shuffle3. rewrite IHm.  reflexivity.
+Qed.
+
 Theorem mul_comm : forall m n : nat,
   m * n = n * m.
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros m n.
+  induction m.
+  - simpl. rewrite mul_0_r. reflexivity.
+  - simpl. rewrite IHm. rewrite mul_comm_helper. reflexivity.
+Qed. 
+
 
 (** **** Exercise: 2 stars, standard, optional (plus_leb_compat_l)
 
@@ -517,9 +576,14 @@ Check leb.
 Theorem plus_leb_compat_l : forall n m p : nat,
   n <=? m = true -> (p + n) <=? (p + m) = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
-
-(** [] *)
+  intros n m p H.
+  induction n.
+  - simpl. rewrite <- H. induction p.
+    + simpl. reflexivity.
+    + simpl. rewrite add_0_r. induction m. { 
+      - simpl. rewrite add_0_r. reflexivity.
+      - 
+      }
 
 (** **** Exercise: 3 stars, standard, optional (more_exercises)
 
