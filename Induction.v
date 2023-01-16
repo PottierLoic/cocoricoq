@@ -912,7 +912,10 @@ Compute (normalize (normalize (B1 Z))).
     Hint 2: Lemma [double_incr_bin] that you proved above will be
     helpful, too.*)
 
-(* theorem for the second part of nat_bin_nat*)
+    
+(* all of the next lemmas concern the nat_bin_nat theorem *)
+(* not sure it is well done but it works *)
+(* theorem for the second part of nat_bin_nat *)
 Theorem double_bin_to_nat: forall (b:bin),
   bin_to_nat(B0 b) = double (bin_to_nat b).
 Proof.
@@ -937,7 +940,6 @@ Proof.
   - simpl. rewrite double_incr_bin. rewrite IHn. reflexivity.
 Qed. 
 
-
 Theorem normalize_b0 : forall n,
   normalize (B0 n) = double_bin (normalize n).
 Proof.
@@ -951,7 +953,7 @@ Proof.
   - simpl. reflexivity.
 Qed.
 
-(* Theorem for the third part of nat_bin_nat*) 
+(* Theorem for the third part of nat_bin_nat *) 
 
 Theorem b1_nat_to_bin : forall n, 
   nat_to_bin (double n + 1) = B1 (nat_to_bin n).
@@ -973,16 +975,24 @@ Proof.
     simpl. 
     rewrite double_plus. 
     rewrite add_assoc.
-    rewrite <- plus_1_l. rewrite add_comm. reflexivity. 
+    rewrite <- plus_1_l. 
+    rewrite add_comm. 
+    reflexivity. 
   }
-  - 
+  - {
+    rewrite <- double_bin_to_nat.
+    simpl.
+    rewrite <- plus_1_l. 
+    rewrite add_comm. 
+    reflexivity. 
+  }
 Qed.
-
 
 (*
     and the famous bin_nat_bin theorem 
-       probably not well done
+       probably not well done but at least it works
 *)
+
 Theorem bin_nat_bin : forall b, nat_to_bin (bin_to_nat b) = normalize b.
 Proof.
   intros. 
@@ -993,8 +1003,16 @@ Proof.
     rewrite IHb. 
     rewrite normalize_b0.
     reflexivity.
-  - 
-
-
+  - rewrite b1_bin_to_nat.
+    rewrite <- double_bin_to_nat.
+    simpl.
+    rewrite <- add_assoc.
+    rewrite <- IHb.
+    rewrite <- b1_nat_to_bin.
+    rewrite <- double_bin_to_nat.
+    simpl.
+    rewrite add_assoc.
+    reflexivity.    
+Qed.
 
 (* 2022-08-08 17:13 *)
