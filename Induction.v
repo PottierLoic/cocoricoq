@@ -8,43 +8,57 @@
 
 From LF Require Export Basics.
 
-(** For this [Require Export] command to work, Coq needs to be
-    able to find a compiled version of [Basics.v], called [Basics.vo],
-    in a directory associated with the prefix [LF].  This file is
-    analogous to the [.class] files compiled from [.java] source files
-    and the [.o] files compiled from [.c] files.
+(** For this [Require] command to work, Coq needs to be able to
+    find a compiled version of the previous chapter ([Basics.v]).
+    This compiled version, called [Basics.vo], is analogous to the
+    [.class] files compiled from [.java] source files and the [.o]
+    files compiled from [.c] files.
 
-    First create a file named [_CoqProject] containing the following
-    line (if you obtained the whole volume "Logical Foundations" as a
-    single archive, a [_CoqProject] should already exist and you can
-    skip this step):
+    To compile [Basics.v] and obtain [Basics.vo], first make sure that
+    the files [Basics.v], [Induction.v], and [_CoqProject] are in
+    the current directory.
+
+    The [_CoqProject] file should contain just the following line:
 
       -Q . LF
 
     This maps the current directory ("[.]", which contains [Basics.v],
     [Induction.v], etc.) to the prefix (or "logical directory")
-    "[LF]".  Proof General and CoqIDE read [_CoqProject]
-    automatically, so they know to where to look for the file
+    "[LF]". Proof General, CoqIDE, and VSCoq read [_CoqProject]
+    automatically, to find out to where to look for the file
     [Basics.vo] corresponding to the library [LF.Basics].
 
-    Once [_CoqProject] is thus created, there are various ways to
-    build [Basics.vo]:
+    Once the files are in place, there are various ways to build
+    [Basics.vo] from an IDE, or you can build it from the command
+    line.  From an IDE...
 
-     - In Proof General or CoqIDE, the compilation should happen
-       automatically when you submit the [Require] line above to PG.
+     - In Proof General: The compilation can be made to happen
+       automatically when you submit the [Require] line above to PG, by
+       setting the emacs variable [coq-compile-before-require] to [t].
+       This can also be found in the menu: "Coq" > "Auto Compilation" >
+       "Compile Before Require".
 
-     - If you want to compile from the command line, generate a
-       [Makefile] using the [coq_makefile] utility, which comes
-       installed with Coq (if you obtained the whole volume as a
-       single archive, a [Makefile] should already exist and you can
-       skip this step):
+     - In CoqIDE: One thing you can do on all platforms is open
+       [Basics.v]; then, in the "Compile" menu, click on "Compile Buffer".
+
+     - For VSCode users, open the terminal pane at the bottom and then
+       follow the command line instructions below.  (If you downloaded
+       the project setup .tgz file, just doing `make` should build all
+       the code.)
+
+    To compile [Basics.v] from the command line...
+
+     - First, generate a [Makefile] using the [coq_makefile] utility,
+       which comes installed with Coq. (If you obtained the whole volume as
+       a single archive, a [Makefile] should already exist and you can
+       skip this step.)
 
          coq_makefile -f _CoqProject *.v -o Makefile
 
-       Note: You should rerun that command whenever you add or remove
-       Coq files to the directory.
+       You should rerun that command whenever you add or remove
+       Coq files in this directory.
 
-       Now you can compile [Basics.v] by running [make] with the
+     - Now you can compile [Basics.v] by running [make] with the
        corresponding [.vo] file as a target:
 
          make Basics.vo
@@ -54,44 +68,73 @@ From LF Require Export Basics.
 
          make
 
-       Under the hood, [make] uses the Coq compiler, [coqc].  You can
+     - Under the hood, [make] uses the Coq compiler, [coqc].  You can
        also run [coqc] directly:
 
          coqc -Q . LF Basics.v
 
-       But [make] also calculates dependencies between source files to
-       compile them in the right order, so [make] should generally be
-       preferred over explicit [coqc].
+     - Since [make] also calculates dependencies between source files
+       to compile them in the right order, [make] should generally be
+       preferred over running [coqc] explicitly.  But as a last (but
+       not terrible) resort, you can simply compile each file manually
+       as you go.  For example, before starting work on the present
+       chapter, you would need to run the following command:
 
-    If you have trouble (e.g., if you get complaints about missing
-    identifiers later in the file), it may be because the "load path"
-    for Coq is not set up correctly.  The [Print LoadPath.] command
-    may be helpful in sorting out such issues.
+        coqc -Q . LF Basics.v
 
-    In particular, if you see a message like
+       Then, once you've finished this chapter, you'd do
 
-        Compiled library Foo makes inconsistent assumptions over
-        library Bar
+        coqc -Q . LF Induction.v
 
-    check whether you have multiple installations of Coq on your
-    machine.  It may be that commands (like [coqc]) that you execute
-    in a terminal window are getting a different version of Coq than
-    commands executed by Proof General or CoqIDE.
+       to get ready to work on the next one.  If you ever remove the
+       .vo files, you'd need to give both commands again (in that
+       order).
 
-    - Another common reason is that the library [Bar] was modified and
-      recompiled without also recompiling [Foo] which depends on it.
-      Recompile [Foo], or everything if too many files are
-      affected.  (Using the third solution above: [make clean; make].)
+    Troubleshooting:
 
-    One more tip for CoqIDE users: If you see messages like [Error:
-    Unable to locate library Basics], a likely reason is
-    inconsistencies between compiling things _within CoqIDE_ vs _using
-    [coqc] from the command line_.  This typically happens when there
-    are two incompatible versions of [coqc] installed on your
-    system (one associated with CoqIDE, and one associated with [coqc]
-    from the terminal).  The workaround for this situation is
-    compiling using CoqIDE only (i.e. choosing "make" from the menu),
-    and avoiding using [coqc] directly at all. *)
+     - For many of the alternatives above you need to make sure that
+       the [coqc] executable is in your [PATH].
+
+     - If you get complaints about missing identifiers, it may be
+       because the "load path" for Coq is not set up correctly.  The
+       [Print LoadPath.] command may be helpful in sorting out such
+       issues.
+
+     - When trying to compile a later chapter, if you see a message like
+
+        Compiled library Induction makes inconsistent assumptions over
+        library Basics
+
+       a common reason is that the library [Basics] was modified and
+       recompiled without also recompiling [Induction] which depends
+       on it.  Recompile [Induction], or everything if too many files
+       are affected (for instance by running [make] and if even this
+       doesn't work then [make clean; make]).
+
+     - If you get complaints about missing identifiers later in this
+       file it may be because the "load path" for Coq is not set up
+       correctly.  The [Print LoadPath.] command may be helpful in
+       sorting out such issues.
+
+       In particular, if you see a message like
+
+           Compiled library Foo makes inconsistent assumptions over
+           library Bar
+
+       check whether you have multiple installations of Coq on your
+       machine.  It may be that commands (like [coqc]) that you execute
+       in a terminal window are getting a different version of Coq than
+       commands executed by Proof General or CoqIDE.
+
+     - One more tip for CoqIDE users: If you see messages like [Error:
+       Unable to locate library Basics], a likely reason is
+       inconsistencies between compiling things _within CoqIDE_ vs _using
+       [coqc] from the command line_.  This typically happens when there
+       are two incompatible versions of [coqc] installed on your
+       system (one associated with CoqIDE, and one associated with [coqc]
+       from the terminal).  The workaround for this situation is
+       compiling using CoqIDE only (i.e. choosing "make" from the menu),
+       and avoiding using [coqc] directly at all. *)
 
 (* ################################################################# *)
 (** * Proof by Induction *)
@@ -136,25 +179,24 @@ Abort.
     inductively defined sets, we often need a more powerful reasoning
     principle: _induction_.
 
-    Recall (from high school, a discrete math course, etc.) the
-    _principle of induction over natural numbers_: If [P(n)] is some
-    proposition involving a natural number [n] and we want to show
-    that [P] holds for all numbers [n], we can reason like this:
+    Recall (from a discrete math course, probably) the _principle of
+    induction over natural numbers_: If [P(n)] is some proposition
+    involving a natural number [n] and we want to show that [P] holds for
+    all numbers [n], we can reason like this:
          - show that [P(O)] holds;
-         - show that, for any [n'], if [P(n')] holds, then so does
-           [P(S n')];
+         - show that, for any [n'], if [P(n')] holds, then so does [P(S
+           n')];
          - conclude that [P(n)] holds for all [n].
 
     In Coq, the steps are the same: we begin with the goal of proving
     [P(n)] for all [n] and break it down (by applying the [induction]
-    tactic) into two separate subgoals: one where we must show [P(O)]
-    and another where we must show [P(n') -> P(S n')].  Here's how
-    this works for the theorem at hand: *)
+    tactic) into two separate subgoals: one where we must show [P(O)] and
+    another where we must show [P(n') -> P(S n')].  Here's how this works
+    for the theorem at hand: *)
 
 Theorem add_0_r : forall n:nat, n + 0 = n.
 Proof.
-  intros n. 
-  induction n as [| n' IHn'].
+  intros n. induction n as [| n' IHn'].
   - (* n = 0 *)    reflexivity.
   - (* n = S n' *) simpl. rewrite -> IHn'. reflexivity.  Qed.
 
@@ -181,8 +223,7 @@ Theorem minus_n_n : forall n,
   minus n n = 0.
 Proof.
   (* WORKED IN CLASS *)
-  intros n. 
-  induction n as [| n' IHn'].
+  intros n. induction n as [| n' IHn'].
   - (* n = 0 *)
     simpl. reflexivity.
   - (* n = S n' *)
@@ -201,52 +242,23 @@ Proof.
 Theorem mul_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
- intros n. 
- induction n as [| n' IHn'].
- - simpl. reflexivity.
- - simpl. rewrite -> IHn'. reflexivity. Qed.
+  (* FILL IN HERE *) Admitted.
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
-  intros n m. 
-  induction n as [| n' IHn'].
-  - simpl. reflexivity.
-  - simpl. rewrite -> IHn'. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
 Theorem add_comm : forall n m : nat,
   n + m = m + n.
 Proof.
-  intros n m. 
-  induction n as [| n' IHn'].
-  - simpl. rewrite -> add_0_r. reflexivity.
-  - simpl. rewrite <- plus_n_Sm. rewrite <- IHn'. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
 Theorem add_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
-  intros n m p.
-  induction n, m, p.
-  - simpl. reflexivity.
-  - simpl. reflexivity. 
-  - simpl. reflexivity. 
-  - simpl. reflexivity. 
-  - simpl. rewrite add_0_r. rewrite add_0_r. reflexivity. 
-  - simpl. rewrite add_0_r. reflexivity.
-  - simpl. rewrite add_0_r. rewrite add_0_r. reflexivity.
-  - simpl. rewrite <- IHn. reflexivity. 
-Qed.
-
-Theorem add_assoc_test_mieux : forall n m p : nat,
-  n + (m + p) = (n + m) + p.
-Proof.
-  intros n m p.
-  induction n.
-  - simpl. reflexivity.
-  - simpl. rewrite IHn. reflexivity. 
-Qed.
+  (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (** **** Exercise: 2 stars, standard (double_plus)
 
@@ -262,11 +274,8 @@ Fixpoint double (n:nat) :=
 
 Lemma double_plus : forall n, double n = n + n .
 Proof.
-  intros n.
-  induction n.
-  - simpl. reflexivity.
-  - simpl. rewrite IHn. rewrite <- plus_n_Sm. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (** **** Exercise: 2 stars, standard (eqb_refl)
 
@@ -275,12 +284,8 @@ Qed.
 Theorem eqb_refl : forall n : nat,
   (n =? n) = true.
 Proof.
-  intros n.
-  induction n.
-  - simpl. reflexivity.
-  - simpl. rewrite IHn. reflexivity.
-Qed.
-
+  (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (even_S)
 
@@ -294,20 +299,7 @@ Qed.
 Theorem even_S : forall n : nat,
   even (S n) = negb (even n).
 Proof.
-  intros n.
-  induction n.
-  - simpl. reflexivity.
-  - rewrite IHn. simpl. rewrite negb_involutive. reflexivity.
-Qed.
-
-(** **** Exercise: 1 star, standard, optional (destruct_induction)
-
-    Briefly explain the difference between the tactics [destruct]
-    and [induction].
-
-(* FILL IN HERE *)
-*)
-
+  (* FILL IN HERE *) Admitted.
 (** [] *)
 
 (* ################################################################# *)
@@ -535,36 +527,17 @@ Definition manual_grade_for_eqb_refl_informal : option (nat*string) := None.
 Theorem add_shuffle3 : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  intros n m p.
-  rewrite add_comm.
-  rewrite <- add_assoc.
-  assert(H : p + n = n + p).
-    { rewrite add_comm. reflexivity. }
-  rewrite H. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
 (** Now prove commutativity of multiplication.  You will probably want
     to look for (or define and prove) a "helper" theorem to be used in
     the proof of this one. Hint: what is [n * (1 + k)]? *)
 
-Theorem mul_comm_helper : forall m n : nat, 
-  m * S n = m + m * n.
-Proof.
-  intros m n.
-  induction m.
-  - simpl. reflexivity.
-  - simpl. rewrite add_shuffle3. rewrite IHm.  reflexivity.
-Qed.
-
 Theorem mul_comm : forall m n : nat,
   m * n = n * m.
 Proof.
-  intros m n.
-  induction m.
-  - simpl. rewrite mul_0_r. reflexivity.
-  - simpl. rewrite IHm. rewrite mul_comm_helper. reflexivity.
-Qed. 
-
+  (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (plus_leb_compat_l)
 
@@ -577,16 +550,10 @@ Check leb.
 Theorem plus_leb_compat_l : forall n m p : nat,
   n <=? m = true -> (p + n) <=? (p + m) = true.
 Proof.
-  intros n m p.
-  revert n.
-  revert m.
-  induction p.
-  - simpl. intros n m H. rewrite H. reflexivity.
-  - simpl. intros n m H. rewrite IHp. 
-    + reflexivity.
-    + rewrite H. reflexivity. 
-Qed. 
-    
+  (* FILL IN HERE *) Admitted.
+
+(** [] *)
+
 (** **** Exercise: 3 stars, standard, optional (more_exercises)
 
     Take a piece of paper.  For each of the following theorems, first
@@ -600,40 +567,26 @@ Qed.
 Theorem leb_refl : forall n:nat,
   (n <=? n) = true.
 Proof.
-  intros n.
-  induction n.
-  - reflexivity.
-  - simpl. rewrite IHn. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
 Theorem zero_neqb_S : forall n:nat,
   0 =? (S n) = false.
 Proof.
-  intros n.
-  simpl. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
 Theorem andb_false_r : forall b : bool,
   andb b false = false.
 Proof.
-  intros b.
-  induction b.
-  - simpl. reflexivity.
-  - simpl. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
 Theorem S_neqb_0 : forall n:nat,
   (S n) =? 0 = false.
 Proof.
-  intros n.
-  simpl. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
 Theorem mult_1_l : forall n:nat, 1 * n = n.
 Proof.
-  intros n.
-  simpl. rewrite add_0_r. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
 Theorem all3_spec : forall b c : bool,
   orb
@@ -642,32 +595,18 @@ Theorem all3_spec : forall b c : bool,
          (negb c))
   = true.
 Proof.
-  intros b c.
-  destruct b.
-  - simpl. destruct c.
-    + reflexivity.
-    + reflexivity.
-  - simpl. reflexivity.
-Qed.
-
+  (* FILL IN HERE *) Admitted.
 
 Theorem mult_plus_distr_r : forall n m p : nat,
   (n + m) * p = (n * p) + (m * p).
 Proof.
-  intros.
-  induction n.
-  - simpl. reflexivity.
-  - simpl. rewrite IHn. rewrite add_assoc. reflexivity.
-Qed. 
+  (* FILL IN HERE *) Admitted.
 
 Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.
 Proof.
-  intros n m p.
-  induction n.
-  - simpl. reflexivity.
-  - simpl. rewrite IHn. rewrite mult_plus_distr_r. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (add_shuffle3')
 
@@ -683,13 +622,8 @@ Qed.
 Theorem add_shuffle3' : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
-  intros.
-  rewrite add_comm.
-  rewrite <- add_assoc.
-  replace (n + p) with (p + n).
-  - simpl. reflexivity.
-  - rewrite add_comm. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (* ################################################################# *)
 (** * Nat to Bin and Back to Nat *)
@@ -701,25 +635,16 @@ Inductive bin : Type :=
   | B0 (n : bin)
   | B1 (n : bin)
 .
-
 (** Before you start working on the next exercise, replace the stub
     definitions of [incr] and [bin_to_nat], below, with your solution
     from [Basics].  That will make it possible for this file to
     be graded on its own. *)
 
-Fixpoint incr (m:bin) : bin :=
-  match m with
-  | Z => B1 Z
-  | B0 m => B1 m
-  | B1 m' => B0 (incr m')
-  end.
+Fixpoint incr (m:bin) : bin
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
-Fixpoint bin_to_nat (m:bin) : nat :=
-  match m with
-  | Z => O
-  | B1 m' => S ((bin_to_nat m') + (bin_to_nat m'))
-  | B0 m' => (bin_to_nat m') + (bin_to_nat m')
-  end.
+Fixpoint bin_to_nat (m:bin) : nat
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
 (** In [Basics], we did some unit testing of [bin_to_nat], but we
     didn't prove its correctness. Now we'll do so. *)
@@ -744,36 +669,19 @@ Fixpoint bin_to_nat (m:bin) : nat :=
     If you want to change your previous definitions of [incr] or [bin_to_nat]
     to make the property easier to prove, feel free to do so! *)
 
-Theorem S_S_plus : forall a b : nat,
-  S a + S b = S (S (a + b)).
-Proof.
-  intros a b.
-  induction a.
-  - simpl. reflexivity.
-  - simpl. rewrite <- IHa. reflexivity.
-Qed.
-
-
-
 Theorem bin_to_nat_pres_incr : forall b : bin,
   bin_to_nat (incr b) = 1 + bin_to_nat b.
 Proof.
-  intros b. 
-  induction b.
-  - simpl. reflexivity.
-  - simpl. reflexivity.
-  - simpl. rewrite IHb. rewrite S_S_plus. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
+
+(** [] *)
 
 (** **** Exercise: 3 stars, standard (nat_bin_nat) *)
 
 (** Write a function to convert natural numbers to binary numbers. *)
 
-Fixpoint nat_to_bin (n:nat) : bin :=
-  match n with
-  | O => Z
-  | S (n') => incr (nat_to_bin(n'))
-  end.
+Fixpoint nat_to_bin (n:nat) : bin
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
 (** Prove that, if we start with any [nat], convert it to [bin], and
     convert it back, we get the same [nat] which we started with.
@@ -787,13 +695,10 @@ Fixpoint nat_to_bin (n:nat) : bin :=
 
 Theorem nat_bin_nat : forall n, bin_to_nat (nat_to_bin n) = n.
 Proof.
-  intros n.
-  induction n.
-  - simpl. reflexivity.
-  - simpl. rewrite bin_to_nat_pres_incr. rewrite IHn. reflexivity.
-Qed. 
+  (* FILL IN HERE *) Admitted.
 
- 
+(** [] *)
+
 (* ################################################################# *)
 (** * Bin to Nat and Back to Bin (Advanced) *)
 
@@ -815,37 +720,26 @@ Abort.
 
 Lemma double_incr : forall n : nat, double (S n) = S (S (double n)).
 Proof.
-  intros n.
-  induction n.
-  - simpl. reflexivity.
-  - simpl. rewrite <- IHn. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
 (** Now define a similar doubling function for [bin]. *)
 
-Definition double_bin (b:bin) : bin :=
-  match b with
-  | Z => Z
-  | B1 b' => B0 (B1 (b'))
-  | B0 b' => B0 (B0 (b'))
-  end.
+Definition double_bin (b:bin) : bin
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
 (** Check that your function correctly doubles zero. *)
 
 Example double_bin_zero : double_bin Z = Z.
-Proof. simpl. reflexivity.  Qed.
+(* FILL IN HERE *) Admitted.
 
 (** Prove this lemma, which corresponds to [double_incr]. *)
 
 Lemma double_incr_bin : forall b,
     double_bin (incr b) = incr (incr (double_bin b)).
 Proof.
-  intros b.
-  destruct b.
-  - simpl. reflexivity.
-  - simpl. reflexivity.
-  - simpl. reflexivity.
-Qed.
+  (* FILL IN HERE *) Admitted.
+
+(** [] *)
 
 (** Let's return to our desired theorem: *)
 
@@ -881,138 +775,28 @@ Abort.
     end of the [bin] and process each bit only once. Do not try to
     "look ahead" at future bits. *)
 
-Fixpoint normalize (b:bin) : bin :=
-  match b with
-  | Z => Z
-  | B0 b' => match normalize b' with
-              | Z => Z
-              | b'' => B0 b''
-            end
-  | B1 b' => B1 (normalize b')
-  end.
-               
-
+Fixpoint normalize (b:bin) : bin
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
 (** It would be wise to do some [Example] proofs to check that your definition of
     [normalize] works the way you intend before you proceed. They won't be graded,
     but fill them in below. *)
 
-Compute (normalize (B1 (B0 (B1 (B0 (B1 (B1 Z))))))).
-
-Compute (normalize (normalize (B1 Z))).
+(* FILL IN HERE *)
 
 (** Finally, prove the main theorem. The inductive cases could be a
     bit tricky.
 
-    Hint 1: Start by trying to prove the main statement, see where you
+    Hint: Start by trying to prove the main statement, see where you
     get stuck, and see if you can find a lemma -- perhaps requiring
     its own inductive proof -- that will allow the main proof to make
-    progress. You might end up with a couple of these.
-
-    Hint 2: Lemma [double_incr_bin] that you proved above will be
-    helpful, too.*)
-
-    
-(* all of the next lemmas concern the nat_bin_nat theorem *)
-(* not sure it is well done but it works *)
-(* theorem for the second part of nat_bin_nat *)
-Theorem double_bin_to_nat: forall (b:bin),
-  bin_to_nat(B0 b) = double (bin_to_nat b).
-Proof.
-  intros.
-  induction b.
-  - simpl. reflexivity.
-  - simpl. rewrite double_plus. reflexivity.
-  - {
-      simpl.
-      rewrite -> double_plus.
-      rewrite <- S_S_plus.
-      reflexivity.
-    }
-Qed. 
-
-Theorem double_nat_to_bin : forall n, 
-  nat_to_bin (double n) = double_bin (nat_to_bin n).
-Proof.
-  intros.
-  induction n.
-  - simpl. reflexivity.
-  - simpl. rewrite double_incr_bin. rewrite IHn. reflexivity.
-Qed. 
-
-Theorem normalize_b0 : forall n,
-  normalize (B0 n) = double_bin (normalize n).
-Proof.
-  intros.
-  induction n.
-  - simpl. reflexivity.
-  - rewrite IHn. simpl. destruct (normalize n).
-    + simpl. reflexivity.
-    + simpl. reflexivity.
-    + simpl. reflexivity.
-  - simpl. reflexivity.
-Qed.
-
-(* Theorem for the third part of nat_bin_nat *) 
-
-Theorem b1_nat_to_bin : forall n, 
-  nat_to_bin (double n + 1) = B1 (nat_to_bin n).
-Proof.
-  intros.
-  induction n.
-  - simpl. reflexivity.
-  - rewrite double_incr. simpl. rewrite IHn. simpl. reflexivity.
-Qed. 
-
-Theorem b1_bin_to_nat : forall b, bin_to_nat (B1 b) = double (bin_to_nat b) + 1.
-Proof.
-  intros b.
-  induction b.
-  - simpl. reflexivity.
-  - {
-    rewrite double_bin_to_nat. 
-    rewrite <- double_bin_to_nat. 
-    simpl. 
-    rewrite double_plus. 
-    rewrite add_assoc.
-    rewrite <- plus_1_l. 
-    rewrite add_comm. 
-    reflexivity. 
-  }
-  - {
-    rewrite <- double_bin_to_nat.
-    simpl.
-    rewrite <- plus_1_l. 
-    rewrite add_comm. 
-    reflexivity. 
-  }
-Qed.
-
-(*
-    and the famous bin_nat_bin theorem 
-       probably not well done but at least it works
-*)
+    progress. We have one lemma for the [B0] case (which also makes
+    use of [double_incr_bin]) and another for the [B1] case. *)
 
 Theorem bin_nat_bin : forall b, nat_to_bin (bin_to_nat b) = normalize b.
 Proof.
-  intros. 
-  induction b.
-  - simpl. reflexivity.
-  - rewrite double_bin_to_nat. 
-    rewrite double_nat_to_bin. 
-    rewrite IHb. 
-    rewrite normalize_b0.
-    reflexivity.
-  - rewrite b1_bin_to_nat.
-    rewrite <- double_bin_to_nat.
-    simpl.
-    rewrite <- add_assoc.
-    rewrite <- IHb.
-    rewrite <- b1_nat_to_bin.
-    rewrite <- double_bin_to_nat.
-    simpl.
-    rewrite add_assoc.
-    reflexivity.    
-Qed.
+  (* FILL IN HERE *) Admitted.
 
-(* 2022-08-08 17:13 *)
+(** [] *)
+
+(* 2025-01-13 16:00 *)
